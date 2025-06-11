@@ -9,7 +9,7 @@ st.set_page_config(page_title="Vendas Benjamin", layout="wide")
 st.title("📊 Quitanda Benjamin")
 
 # 🔧 Caminho da pasta sincronizada do Google Drive (ajuste aqui!)
-CAMINHO_PASTA = Path(r"H:\Outros computadores\Meu computador\BOT\bot vendas\relatorios")
+CAMINHO_PASTA = Path(".")
 
 # Verifica se a pasta existe
 if not CAMINHO_PASTA.exists():
