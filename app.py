@@ -4,13 +4,14 @@ import os
 from pathlib import Path
 import plotly.express as px
 from datetime import datetime
+import time
 
 # Usuário e senha fixos (você pode mudar aqui)
 USUARIO = "admin"
 SENHA = "1234"
 
 def carregar_dados():
-    CAMINHO_PASTA = Path(".")
+    CAMINHO_PASTA = Path("H:\Outros computadores\Meu computador\BOT\bot vendas\relatorios")
 
     if not CAMINHO_PASTA.exists():
         st.error(f"Pasta não encontrada: {CAMINHO_PASTA}")
@@ -67,6 +68,13 @@ def dashboard(df, ultima_atualizacao_timestamp):
         hole=0.4
     )
     st.plotly_chart(fig, use_container_width=True)
+
+    # Atualiza automaticamente a cada 30 segundos
+    st.markdown("<hr>", unsafe_allow_html=True)
+    with st.spinner("⏳ Aguardando novas atualizações..."):
+        time.sleep(30)
+        st.experimental_rerun()
+
 
 def main():
     if 'login' not in st.session_state:
