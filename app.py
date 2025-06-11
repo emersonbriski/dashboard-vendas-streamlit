@@ -83,7 +83,8 @@ def main():
         if st.button("🚪 Entrar"):
             if usuario_input == USUARIO and senha_input == SENHA:
                 st.session_state.login = True
-                st.experimental_rerun()
+                st.rerun()
+
             else:
                 st.error("Usuário ou senha incorretos.")
     else:
@@ -94,7 +95,8 @@ def main():
         st.markdown("---")
         if st.button("🔓 Sair"):
             st.session_state.login = False
-            st.experimental_rerun()
+            st.rerun()
+
 
 
 if __name__ == "__main__":
