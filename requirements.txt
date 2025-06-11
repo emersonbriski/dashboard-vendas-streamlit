@@ -1,5 +1,5 @@
-streamlit==1.25.0
+streamlit
 pandas
 plotly
 xlrd
-streamlit-authenticator==0.6.2
+streamlit-authenticator
