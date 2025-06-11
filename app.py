@@ -2,95 +2,91 @@ import streamlit as st
 import pandas as pd
 import os
 from pathlib import Path
-import streamlit_authenticator as stauth
 import plotly.express as px
 from datetime import datetime
 
-# Usuários e senhas (senha já com hash bcrypt)
-users = {
-    "usernames": {
-        "emerson": {
-            "name": "Emerson",
-            "password": "$2b$12$hPqBcgOtAknHYzGx3kPtBObvOx5JYbVDpMaS1r6eEOo9tpZ6ns7ju"  # senha: 12345
-        }
-    }
-}
+# Usuário e senha fixos (você pode mudar aqui)
+USUARIO = "admin"
+SENHA = "1234"
 
-# Configuração do autenticador
-authenticator = stauth.Authenticate(
-    users,
-    "dashboard_vendas_cookie",
-    "dashboard_vendas_signature",
-    cookie_expiry_days=1
-)
-
-name, authentication_status, username = authenticator.login("Login", "sidebar")
-
-if authentication_status:
-    st.set_page_config(page_title="Dashboard de Vendas", layout="wide")
-    st.title(f"📊 Dashboard de Vendas em Tempo Real - {name}")
-
-    CAMINHO_PASTA = Path(r"H:\Outros computadores\Meu computador\BOT\bot vendas\relatorios")
+def carregar_dados():
+    CAMINHO_PASTA = Path(".")
 
     if not CAMINHO_PASTA.exists():
         st.error(f"Pasta não encontrada: {CAMINHO_PASTA}")
+        return None, None
+
+    arquivos_xls = [CAMINHO_PASTA / f for f in os.listdir(CAMINHO_PASTA) if f.lower().endswith(".xls")]
+    if not arquivos_xls:
+        st.warning("Nenhum arquivo .xls encontrado na pasta.")
+        return None, None
+
+    arquivos_xls.sort(key=lambda f: f.stat().st_mtime, reverse=True)
+    arquivo_mais_recente = arquivos_xls[0]
+
+    try:
+        df = pd.read_excel(arquivo_mais_recente)
+        # Corrige nomes de colunas
+        df.columns = df.columns.str.strip()
+        # Converte colunas numéricas
+        df["Numero notas"] = pd.to_numeric(df["Numero notas"], errors="coerce")
+        df["Valor notas"] = df["Valor notas"].astype(str).str.replace(",", ".")
+        df["Valor notas"] = pd.to_numeric(df["Valor notas"], errors="coerce")
+        df = df.dropna(subset=["Portador", "Numero notas", "Valor notas"])
+        return df, arquivo_mais_recente.stat().st_mtime
+    except Exception as e:
+        st.error(f"Erro ao ler o arquivo: {e}")
+        return None, None
+
+def dashboard(df, ultima_atualizacao_timestamp):
+    st.title("📊 Dashboard de Vendas em Tempo Real")
+
+    total_notas = int(df["Numero notas"].sum())
+    total_valor = df["Valor notas"].sum()
+    ticket_medio = total_valor / total_notas if total_notas else 0
+
+    col1, col2, col3 = st.columns(3)
+    col1.metric("🧾 Total de Notas", f"{total_notas}")
+    col2.metric("💰 Total Vendido", f"R$ {total_valor:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."))
+    col3.metric("🎯 Ticket Médio", f"R$ {ticket_medio:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."))
+
+    st.markdown("---")
+
+    fig = px.pie(
+        df,
+        values="Valor notas",
+        names="Portador",
+        title="Distribuição de Vendas por Forma de Pagamento",
+        hole=0.4
+    )
+    st.plotly_chart(fig, use_container_width=True)
+
+    if ultima_atualizacao_timestamp:
+        datahora = datetime.fromtimestamp(ultima_atualizacao_timestamp).strftime("%d/%m/%Y %H:%M:%S")
+        st.markdown(f"**Última atualização dos dados:** {datahora}")
+
+def main():
+    if 'login' not in st.session_state:
+        st.session_state.login = False
+
+    if not st.session_state.login:
+        st.subheader("Faça login para acessar o dashboard")
+        usuario_input = st.text_input("Usuário")
+        senha_input = st.text_input("Senha", type="password")
+        if st.button("Entrar"):
+            if usuario_input == USUARIO and senha_input == SENHA:
+                st.session_state.login = True
+                st.experimental_rerun()
+            else:
+                st.error("Usuário ou senha incorretos")
     else:
-        arquivos_xls = [
-            CAMINHO_PASTA / f
-            for f in os.listdir(CAMINHO_PASTA)
-            if f.lower().endswith(".xls")
-        ]
+        df, ultima_atualizacao = carregar_dados()
+        if df is not None:
+            dashboard(df, ultima_atualizacao)
 
-        if arquivos_xls:
-            arquivos_xls.sort(key=lambda f: f.stat().st_mtime, reverse=True)
-            arquivo_mais_recente = arquivos_xls[0]
+        if st.button("Sair"):
+            st.session_state.login = False
+            st.experimental_rerun()
 
-            st.info(f"Arquivo carregado: `{arquivo_mais_recente.name}`")
-
-            try:
-                df = pd.read_excel(arquivo_mais_recente)
-
-                # Ajustes
-                df.columns = df.columns.str.strip()
-                df["Numero notas"] = pd.to_numeric(df["Numero notas"], errors="coerce")
-                df["Valor notas"] = df["Valor notas"].astype(str).str.replace(",", ".")
-                df["Valor notas"] = pd.to_numeric(df["Valor notas"], errors="coerce")
-                df = df.dropna(subset=["Portador", "Numero notas", "Valor notas"])
-
-                # KPIs
-                total_notas = int(df["Numero notas"].sum())
-                total_valor = df["Valor notas"].sum()
-                ticket_medio = total_valor / total_notas if total_notas else 0
-
-                col1, col2, col3 = st.columns(3)
-                col1.metric("🧾 Total de Notas", f"{total_notas}")
-                col2.metric("💰 Total Vendido", f"R$ {total_valor:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."))
-                col3.metric("🎯 Ticket Médio", f"R$ {ticket_medio:,.2f}".replace(",", "X").replace(".", ",").replace("X", "."))
-
-                # Data e hora da última modificação do arquivo
-                timestamp = arquivo_mais_recente.stat().st_mtime
-                data_hora = datetime.fromtimestamp(timestamp).strftime("%d/%m/%Y %H:%M:%S")
-                st.markdown(f"**Última atualização:** {data_hora}")
-
-                st.markdown("---")
-
-                fig = px.pie(
-                    df,
-                    values="Valor notas",
-                    names="Portador",
-                    title="Distribuição de Vendas por Forma de Pagamento",
-                    hole=0.4
-                )
-                st.plotly_chart(fig, use_container_width=True)
-
-            except Exception as e:
-                st.error(f"Erro ao ler o arquivo: {e}")
-        else:
-            st.warning("Nenhum arquivo .xls encontrado na pasta.")
-
-    authenticator.logout("Logout", "sidebar")
-
-elif authentication_status is False:
-    st.error("Usuário ou senha incorretos")
-elif authentication_status is None:
-    st.info("Por favor, faça login para acessar o dashboard")
+if __name__ == "__main__":
+    main()
