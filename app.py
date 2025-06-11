@@ -70,23 +70,32 @@ def main():
         st.session_state.login = False
 
     if not st.session_state.login:
-        st.subheader("Faça login para acessar o dashboard")
-        usuario_input = st.text_input("Usuário")
-        senha_input = st.text_input("Senha", type="password")
-        if st.button("Entrar"):
+        st.markdown("## 🔐 Acesso ao Dashboard")
+        st.markdown("Informe suas credenciais para visualizar os dados de vendas.")
+
+        col1, col2 = st.columns([1, 2])
+        with col1:
+            st.image("https://img.icons8.com/fluency/96/login-rounded-right.png", width=70)
+        with col2:
+            usuario_input = st.text_input("👤 Usuário")
+            senha_input = st.text_input("🔑 Senha", type="password")
+
+        if st.button("🚪 Entrar"):
             if usuario_input == USUARIO and senha_input == SENHA:
                 st.session_state.login = True
                 st.experimental_rerun()
             else:
-                st.error("Usuário ou senha incorretos")
+                st.error("Usuário ou senha incorretos.")
     else:
         df, ultima_atualizacao = carregar_dados()
         if df is not None:
             dashboard(df, ultima_atualizacao)
 
-        if st.button("Sair"):
+        st.markdown("---")
+        if st.button("🔓 Sair"):
             st.session_state.login = False
             st.experimental_rerun()
+
 
 if __name__ == "__main__":
     main()
