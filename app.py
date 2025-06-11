@@ -41,6 +41,13 @@ def carregar_dados():
 def dashboard(df, ultima_atualizacao_timestamp):
     st.title("📊 Dashboard de Vendas em Tempo Real")
 
+    if ultima_atualizacao_timestamp:
+        datahora = datetime.fromtimestamp(ultima_atualizacao_timestamp).strftime("%d/%m/%Y %H:%M:%S")
+        st.markdown(
+            f"<p style='color:#00FF00; font-weight: bold; font-size: 16px;'>🕒 Última atualização: {datahora}</p>",
+            unsafe_allow_html=True
+        )
+
     total_notas = int(df["Numero notas"].sum())
     total_valor = df["Valor notas"].sum()
     ticket_medio = total_valor / total_notas if total_notas else 0
@@ -60,10 +67,6 @@ def dashboard(df, ultima_atualizacao_timestamp):
         hole=0.4
     )
     st.plotly_chart(fig, use_container_width=True)
-
-    if ultima_atualizacao_timestamp:
-        datahora = datetime.fromtimestamp(ultima_atualizacao_timestamp).strftime("%d/%m/%Y %H:%M:%S")
-        st.markdown(f"**Última atualização dos dados:** {datahora}")
 
 def main():
     if 'login' not in st.session_state:
