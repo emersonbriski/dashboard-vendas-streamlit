@@ -39,7 +39,7 @@ def carregar_dados():
         return None, None
 
 def dashboard(df, ultima_atualizacao_timestamp):
-    st.title("📊 Dashboard de Vendas em Tempo Real")
+    st.title("📊 Quitanda Benjamin")
 
     if ultima_atualizacao_timestamp:
         datahora = datetime.fromtimestamp(ultima_atualizacao_timestamp).strftime("%d/%m/%Y %H:%M:%S")
@@ -73,7 +73,7 @@ def main():
         st.session_state.login = False
 
     if not st.session_state.login:
-        st.markdown("## 🔐 Acesso ao Dashboard")
+        st.markdown("## 🔐 Acesso ao Dashboard Quitanda")
         st.markdown("Informe suas credenciais para visualizar os dados de vendas.")
 
         col1, col2 = st.columns([1, 2])
