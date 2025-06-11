@@ -24,7 +24,7 @@ authenticator = stauth.Authenticate(
     cookie_expiry_days=1
 )
 
-name, authentication_status, username = authenticator.login("Login", "main")
+name, authentication_status, username = authenticator.login("Login", "sidebar")
 
 if authentication_status:
     st.set_page_config(page_title="Dashboard de Vendas", layout="wide")
