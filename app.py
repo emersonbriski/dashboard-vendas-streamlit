@@ -3,6 +3,29 @@ import pandas as pd
 import os
 from pathlib import Path
 import plotly.express as px  # Import aqui, no topo
+import streamlit as st
+import streamlit_authenticator as stauth
+
+# Usuários e senhas fixos (senha já em hash para segurança)
+users = {
+    "emerson": {
+        "name": "Emerson",
+        "password": "$2b$12$hPqBcgOtAknHYzGx3kPtBObvOx5JYbVDpMaS1r6eEOo9tpZ6ns7ju"  # senha: "12345"
+    }
+}
+
+authenticator = stauth.Authenticate(
+    users,
+    "dashboard_vendas",  # nome do cookie
+    "abcdef",            # chave para o cookie
+    cookie_expiry_days=1
+)
+
+name, authentication_status, username = authenticator.login("Login", "main")
+
+if not authentication_status:
+    st.warning("⚠️ Usuário ou senha incorretos")
+    st.stop()
 
 # Configuração da página
 st.set_page_config(page_title="Vendas Benjamin", layout="wide")
