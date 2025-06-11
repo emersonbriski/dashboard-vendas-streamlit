@@ -8,11 +8,14 @@ import streamlit_authenticator as stauth
 
 # Usuários e senhas fixos (senha já em hash para segurança)
 users = {
-    "emerson": {
-        "name": "Emerson",
-        "password": "$2b$12$hPqBcgOtAknHYzGx3kPtBObvOx5JYbVDpMaS1r6eEOo9tpZ6ns7ju"  # senha: "12345"
+    "usernames": {
+        "emerson": {
+            "name": "Emerson",
+            "password": "$2b$12$hPqBcgOtAknHYzGx3kPtBObvOx5JYbVDpMaS1r6eEOo9tpZ6ns7ju"  # senha: "12345"
+        }
     }
 }
+
 
 authenticator = stauth.Authenticate(
     users,
